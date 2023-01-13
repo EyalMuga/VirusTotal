@@ -1,9 +1,6 @@
 # VirusTotal program for scanning URL(s)
 A command-line script for checking the reputation of one or more URLs using VirusTotal's API.
 
-# Getting Started
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
 # Prerequisites
 Python 3\
 VirusTotal API key Get one from https://www.virustotal.com/
