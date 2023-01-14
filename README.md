@@ -18,7 +18,7 @@ where url1, url2, ... are one or more URLs to check, YOUR_API_KEY is your VirusT
 -s, --scan : an optional argument that forces a scan of the provided URLs if set.
 -q, --quota : an optional argument that enables verbose wait in case of quota insufficiency.
 -v, --verbose : an optional argument that enables verbose prints throughout the process if set.
--a, --age : an optional argument that accepts a value for cache max age in days, default = 182.
+-a, --age : an optional argument that accepts a value for cache max age in days, default = 30.
   ```
 
 # Deployment
