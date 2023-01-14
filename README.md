@@ -37,15 +37,10 @@ with Terminal open main.py
 it should look like this:
 ```bash
 
-MUGA@Mugas-MacBook-Pro VirusTotal % 
-python3 main.py https://amazon.com https://facebook.com https://edulabs.co.il
---apikey 44365dc50d$$$$$$1d0e0f4e146******ed135a52$$$$$$563b9605ac7
-
-Either URL https://edulabs.co.il not in cache or cache is outdated, proceeding to analysis
-Analyzed URL https://edulabs.co.il successfully!
-URL: https://amazon.com, analysis date: 01-01-2023, result: harmless, accuracy: 87.78%, source:cache
-URL: https://facebook.com, analysis date: 02-01-2023, result: harmless, accuracy: 87.91%, source:cache
-URL: https://edulabs.co.il, analysis date: 13-01-2023, result: harmless, accuracy: 85.56%, source:api
+MUGA@Mugas-MacBook-Pro VirusTotal % python3 Main.py https://amazon.com https://facebook.com https://edulabs.co.il -k 44365dc50db5719a5a1d0e**********04b05330ed135a52bb7a5563b9605ac7
+Url 1: https://amazon.com has been analyzed on 08-01-2023, result: harmless, accuracy: 87.78%, source:cache
+Url 2: https://facebook.com has been analyzed on 08-01-2023, result: harmless, accuracy: 88.89%, source:cache
+Url 3: https://edulabs.co.il has been analyzed on 13-01-2023, result: harmless, accuracy: 85.56%, source:api
 
 ```
 In this example I used one URL that hasnt been in the cache and two more URL's I already scanned.
