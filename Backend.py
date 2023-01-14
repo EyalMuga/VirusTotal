@@ -41,7 +41,7 @@ class VTAnalyzer:
         self._quota = quota
         self._verbose = verbose
         self._token = apikey
-        self._cache_age = int(age) if isinstance(age, int) or age.isdigit() else 182
+        self._cache_age = int(age) if isinstance(age, int) or age.isdigit() else 30
         # Cache maps URL strings to a respective (last_analysis_date, (result, ratio)) nested tuple
         if not os.path.exists('cache.json'):
             self._cache = dict()
