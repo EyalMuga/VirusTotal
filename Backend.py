@@ -3,11 +3,13 @@ import json
 import time
 import base64
 import requests
-from Consts import *
 from Exception import *
 from threading import Lock
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+ANALYSIS_URL = "https://www.virustotal.com/api/v3/urls"
+SCAN_URL = "https://www.virustotal.com/api/v3/urls"
 
 
 class VTAnalyzer:
@@ -76,20 +78,14 @@ class VTAnalyzer:
         return False
 
     def scan_url(self, url: str) -> tuple[bool, str]:
-        """
-        Scans URL using VirusTotal API
-        :param url: URL string
-        :return bool: if scan succeeded
-        :raise BadRequest(): scan failed
-        """
         data = f"url={url}"
         headers = {
             "accept": "application/json",
             "x-apikey": self._token,
             "content-type": "application/x-www-form-urlencoded"
         }
-
-        print(f"Scanning URL {url}...") if self._verbose else None
+        if self._verbose:
+            print(f"Scanning URL {url}")
 
         response = requests.post(SCAN_URL, data=data, headers=headers)
 
@@ -118,7 +114,7 @@ class VTAnalyzer:
         :param url: str
         :return: None
         If the URL hasn't been scanned before, the method will perform a scan and re-analyze
-        Finally, it will store the data in self._cache accordingly
+        Finally, it will store the data in self._cache.
         """
         full_url = f"{ANALYSIS_URL}/{self.encode_url(url)}"
         headers = {
@@ -144,14 +140,15 @@ class VTAnalyzer:
                 self._cache[url] = [last_analysis_epoch, (max_key, ratio)]
                 return last_analysis_epoch, (max_key, ratio)
 
-    def _single_url_flow(self, url: str) -> list | bool:
+    def _single_url(self, url: str) -> list | bool:
+        # checks if the cache stores the url from earlier scanning, if it is it returns the url analysis from the cache
         source = 'cache'
         if (url not in self._cache) or ((url in self._cache) and (not self.check_cache(self._cache[url][0], url))):
             print(f"Either URL {url} not in cache or cache is outdated, proceeding to analysis")
             ret_val = self.analyze_url(url)
             if ret_val is False:
                 return False
-
+            # its mean the url not in cache and now going to scan the url
             source = 'api'
             days_since = datetime.utcnow() - datetime.utcfromtimestamp(ret_val[0])
             if days_since > timedelta(days=self._cache_age):
@@ -191,8 +188,8 @@ class VTAnalyzer:
                     ret_val.append([url, result[0], result[1][0], result[1][1]])
             else:
                 for url in self._urls:
-                    ret_val.append(executor.submit(self._single_url_flow, url).result())
-
+                    ret_val.append(executor.submit(self._single_url, url).result())
+            # printing the result
             for i, result in enumerate(ret_val):
                 if result is not False:
                     print(
