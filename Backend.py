@@ -17,58 +17,57 @@ class VTAnalyzer:
     Provided with URL(s), it will return a reputation-wired result whether the URL you specify is
     MALICIOUS or HARMLESS.
 
-    --apikey / -k (followed by <APIKEY_STRING>) - use a designated API key
-    --scan / -s (bool variable) - perform a force-scan for the URL prior to accessing its results
-    --quota / -q (bool variable) - verbose waiting in case of insufficient API quota
-
+    --apikey / -k (followed by <APIKEY_STRING>) - API key for VirusTotal API
+    --scan / -s (bool variable) - perform a force-scan for the URL prior to accessing its results (if any)  (default: False)
+    --quost / -q (bool variable) - check your current API quota (number of requests left) for the day (24 hours)
     VirusTotal API responses:
 
     URL analysis:
-    1. 404 for a never-scanned URL
+    1. 404 for a never-scanned URL - "The requested resource is not among the finished, queued or pending scans"
     2. 200 for a scanned URL, returns an analysis dict:
     Result stats - ["data"]["attributes"]["last_analysis_stats"]
     (dict['harmless', 'malicious', 'suspicious', 'undetected'])
     Last analysis date - ["data"]["attributes"]["last_analysis_date"] (epoch timestamp)
 
     URL scan:
-    1. 400 for an invalid URL - "Unable to canonicalize url"
-    2. 200 for success, returns dict["data"] = {"type": "analysis, "id": str}
-    """
+    1. 400 for an invalid URL - "Unable to canonicalize url" (e.g. "https://www.google.com")
+    2. 200 for success, returns dict["data"] = {"type": "analysis, "id": str} (str = URL encoded in Base64)
+    """ 
 
     def __init__(self, urls: list[str], apikey: str, scan: bool, quota: bool, verbose: bool, age: str):
-        self._urls = urls
+        self._urls = urls 
         self._scan = scan
-        self._quota = quota
+        self._quota = quota 
         self._verbose = verbose
         self._token = apikey
-        self._cache_age = int(age) if isinstance(age, int) or age.isdigit() else 30
-        # Cache maps URL strings to a respective (last_analysis_date, (result, ratio)) nested tuple
+        self._cache_age = int(age) if isinstance(age, int) or age.isdigit() else 30 # Default cache age is 30 days
+        # Cache maps URL strings to their last analysis date (epoch timestamp) and their reputation (str) 
         if not os.path.exists('cache.json'):
             self._cache = dict()
         else:
             with open('cache.json', mode='r') as f:
-                self._cache = json.load(f)
+                self._cache = json.load(f) 
 
-        # Uniformed Lock() for threaded actions, e.g. accessing cache and executing actions on it
-        self._lock = Lock()
+        # Uniformed Lock() object for thread-safe operations on the cache file and the cache dict itself (self._cache)  
+        self._lock = Lock() 
 
     @staticmethod
     def encode_url(url: str):
         """
-        Encodes URL string to Base64
-        :param url: str
-        :return url: base64
+        Encodes URL string to Base64 format
+        :param url: str URL
+        :return url: base64 encoded URL
         """
-        return base64.urlsafe_b64encode(f"{url}".encode()).decode().strip("=")
+        return base64.urlsafe_b64encode(f"{url}".encode()).decode().strip("=") 
 
-    def check_cache(self, epoch: int, url: str) -> bool:
+    def check_cache(self, epoch: int, url: str) -> bool: 
         """
-        Check cached content age
-        :param url: URL str
-        :param epoch: Unix timestamp int
-        :return bool: if today's date - last analysis date <= self._cache_age
+        Check cached content age (in days) and return True if the content is still valid
+        :param url: URL str to check cache for 
+        :param epoch: Unix timestamp int (last analysis date)
+        :return bool: if today's date - last analysis date <= self._cache_age (default: 30 days)
         """
-        datetime_epoch = datetime.utcfromtimestamp(epoch)
+        datetime_epoch = datetime.utcfromtimestamp(epoch) 
 
         if datetime.utcnow() - datetime_epoch <= timedelta(days=self._cache_age):
             print(f"Found valid cached data for URL: {url}. "
@@ -79,7 +78,7 @@ class VTAnalyzer:
     def scan_url(self, url: str) -> tuple[bool, str]:
         data = f"url={url}"
         headers = {
-            "accept": "application/json",
+            "accept": "application/json", 
             "x-apikey": self._token,
             "content-type": "application/x-www-form-urlencoded"
         }
@@ -96,10 +95,10 @@ class VTAnalyzer:
     @staticmethod
     def _get_url_reputation(json_resp: dict):
         """
-        Get URL reputation from a JSON-type response
-        :param json_resp: dict
-        :return tuple(max_key, ratio): max_key in ['harmless', 'malicious', 'suspicious', 'undetected'],
-        ratio = accuracy percentage
+        Get URL reputation from a JSON-type response from VirusTotal API
+        :param json_resp: dict (JSON response)
+        :return tuple(max_key, ratio): max_key in ['harmless', 'malicious', 'suspicious', 'undetected'], 
+        ratio = accuracy percentage (float)
         """
         stats = json_resp['data']['attributes']['last_analysis_stats']
         total_values_sum, max_val = sum(stats.values()), max(stats.values())
@@ -109,11 +108,11 @@ class VTAnalyzer:
 
     def analyze_url(self, url: str):
         """
-        Analyze URL using VirusTotal API
-        :param url: str
-        :return: None
-        If the URL hasn't been scanned before, the method will perform a scan and re-analyze
-        Finally, it will store the data in self._cache.
+        Analyze URL using VirusTotal API and return its reputation (str) and accuracy (float) 
+        :param url: str URL to analyze 
+        :return: None 
+        If the URL hasn't been scanned before, the method will perform a scan and re-analyze the URL.
+        Finally, it will store the data in self._cache. 
         """
         full_url = f"{VT_URL}/{self.encode_url(url)}"
         headers = {
@@ -157,7 +156,7 @@ class VTAnalyzer:
                       f"Re-scanning to uphold with cache age limit: {self._cache_age} days") if self._verbose else None
                 self.scan_url(url)
 
-            time.sleep(5)
+            time.sleep(15)
 
             full_url = f"{VT_URL}/{self.encode_url(url)}"
             headers = {
