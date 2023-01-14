@@ -192,10 +192,10 @@ class VTAnalyzer:
             for i, result in enumerate(ret_val):
                 if result is not False:
                     print(
-                        f"URL {i+1}: {result[0]}, analysis date: {datetime.utcfromtimestamp(result[1]).strftime('%d-%m-%Y')},"
+                        f"Url {i+1}: {result[0]} has been analyzed on {datetime.utcfromtimestamp(result[1]).strftime('%d-%m-%Y')},"
                         f" result: {result[2]}, accuracy: {result[3]:.2f}%, source:{result[4]}")
                 else:
-                    print(f" one of the URL'S is not found. please check the URL")
+                    print(f"URL {i+1}: {self._urls[i]} is not found")
 
         # Save cache:
         with open('cache.json', 'w') as f:
