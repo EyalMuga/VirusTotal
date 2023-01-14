@@ -8,8 +8,7 @@ from threading import Lock
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-ANALYSIS_URL = "https://www.virustotal.com/api/v3/urls"
-SCAN_URL = "https://www.virustotal.com/api/v3/urls"
+VT_URL = "https://www.virustotal.com/api/v3/urls"
 
 
 class VTAnalyzer:
@@ -87,7 +86,7 @@ class VTAnalyzer:
         if self._verbose:
             print(f"Scanning URL {url}")
 
-        response = requests.post(SCAN_URL, data=data, headers=headers)
+        response = requests.post(VT_URL, data=data, headers=headers)
 
         if response.status_code == 200:
             print(f"URL {url} has been successfully scanned!") if self._verbose else None
@@ -116,7 +115,7 @@ class VTAnalyzer:
         If the URL hasn't been scanned before, the method will perform a scan and re-analyze
         Finally, it will store the data in self._cache.
         """
-        full_url = f"{ANALYSIS_URL}/{self.encode_url(url)}"
+        full_url = f"{VT_URL}/{self.encode_url(url)}"
         headers = {
             "accept": "application/json",
             "x-apikey": self._token
@@ -160,7 +159,7 @@ class VTAnalyzer:
 
             time.sleep(5)
 
-            full_url = f"{ANALYSIS_URL}/{self.encode_url(url)}"
+            full_url = f"{VT_URL}/{self.encode_url(url)}"
             headers = {
                 "accept": "application/json",
                 "x-apikey": self._token
