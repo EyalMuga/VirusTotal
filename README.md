@@ -49,6 +49,7 @@ URL: https://edulabs.co.il, analysis date: 13-01-2023, result: harmless, accurac
 
 ```
 In this example I used one URL that hasnt been in the cache and two more URL's I already scanned.
+As you can see the source of the analysis for the third Url is from the api and the first two url's from the cache.
 
 
 
